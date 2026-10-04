@@ -36,10 +36,10 @@ strict CSP), so the Hono adapter is meant to work on the edge.
 
 ```
 ata-mw/
-  package.json              private root, scripts: build, test, typecheck
-  pnpm-workspace.yaml
-  tsconfig.base.json
-  .github/workflows/ci.yml  typecheck + test + build, Node 20, 22, 24
+  package.json              private root, "workspaces": ["packages/*"], scripts: build, test, typecheck, test:dist
+  tsconfig.json             one config for src and tests; tsconfig.dist.json checks the built types
+  scripts/                  edge-smoke.mjs, consumer-types.ts (run against the built packages)
+  .github/workflows/ci.yml  typecheck + test + test:dist, Node 22, 24
   LICENSE                   MIT
   README.md                 short: what it is, 3 install lines, 3 examples
   packages/
@@ -128,8 +128,9 @@ Query handling: Express and Middy pass the framework's query object through. Hon
 ## Dependencies
 
 - `@ata-mw/core`: peer `ata-validator >= 1.42`.
-- `@ata-mw/express`, `@ata-mw/hono`, `@ata-mw/middy`: dependency `@ata-mw/core`;
-  peers `express >= 4`, `hono >= 4`, `@middy/core >= 5`.
+- `@ata-mw/express`, `@ata-mw/hono`, `@ata-mw/middy`: dependency `@ata-mw/core`; peers
+  `ata-validator >= 1.42` (so npm keeps one copy), `express >= 4`, `hono >= 4`, `@middy/core >= 5`.
+  The Middy adapter imports types only from `@middy/core`.
 
 ## Testing
 
@@ -137,10 +138,12 @@ Query handling: Express and Middy pass the framework's query object through. Hon
   response status matching (exact, `default`, skipped).
 - **Per adapter:** integration against the real framework. Express through Node `http`,
   Hono through `app.request()`, Middy by invoking the wrapped handler.
-- **Types:** vitest typecheck. Asserts `Infer<S>` reaches the handler in all three adapters.
+- **Types:** `expectTypeOf` assertions inside the test files, checked by `tsc --noEmit`. Asserts
+  `Infer<S>` reaches the handler in all three adapters. `consumer-types.ts` repeats this against
+  the built `.d.mts` files.
 - **Matrix:** Express 4 and 5; Node 22 and 24 (see Amendments).
-- **Edge claim:** the Hono adapter test also runs under
-  `node --disallow-code-generation-from-strings`.
+- **Edge claim:** `scripts/edge-smoke.mjs` runs the built Hono adapter under
+  `node --disallow-code-generation-from-strings`, and loads every built package as ESM and CJS.
 - Every behavior in the Error section has at least one test.
 
 ## Amendments (2026-10-05, found while writing the plan)
@@ -156,6 +159,7 @@ before the plan was written.
 | 4 | `validateResponse` returns `{ ok }` or `{ skipped }` | Returns `{ ok: true, skipped: boolean }` or `{ ok: false, errors }` | One discriminant (`ok`) for adapters |
 | 5 | Middy `validate` returns a middleware | Returns `MiddlewareObj<ValidatedEvent<S>>`, so `middy().use(validate(spec)).handler(event => ...)` types `event` without an annotation. A bad response is written to `request.response` in `after`, never returned | Returning from an `after` hook stops the `after` hooks of other middleware |
 | 6 | Express `ResBody` from `Infer<S>` | `res.json` is typed as the union of all declared response schemas. A handler that sends an error body for an undeclared status must declare a `default` schema or cast | Makes compile-time checking of responses real. Documented in the Express README |
+| 8 | One tsconfig, tests typed by `tsc`, dist checks in `scripts/` | see the layout and Testing sections | Fewer files; the same guarantees, checked on the built output too |
 | 7 | Response validators use ata defaults | Response validators use `useDefaults: false` and the success path uses `isValidObject` | ata's `validate()` mutates its input and fills defaults; response payloads must stay untouched |
 
 Results of the six assumptions:
