@@ -159,8 +159,8 @@ before the plan was written.
 | 4 | `validateResponse` returns `{ ok }` or `{ skipped }` | Returns `{ ok: true, skipped: boolean }` or `{ ok: false, errors }` | One discriminant (`ok`) for adapters |
 | 5 | Middy `validate` returns a middleware | Returns `MiddlewareObj<ValidatedEvent<S>>`, so `middy().use(validate(spec)).handler(event => ...)` types `event` without an annotation. A bad response is written to `request.response` in `after`, never returned | Returning from an `after` hook stops the `after` hooks of other middleware |
 | 6 | Express `ResBody` from `Infer<S>` | `res.json` is typed as the union of all declared response schemas. A handler that sends an error body for an undeclared status must declare a `default` schema or cast | Makes compile-time checking of responses real. Documented in the Express README |
-| 8 | One tsconfig, tests typed by `tsc`, dist checks in `scripts/` | see the layout and Testing sections | Fewer files; the same guarantees, checked on the built output too |
 | 7 | Response validators use ata defaults | Response validators use `useDefaults: false` and the success path uses `isValidObject` | ata's `validate()` mutates its input and fills defaults; response payloads must stay untouched |
+| 8 | One tsconfig, tests typed by `tsc`, dist checks in `scripts/` | see the layout and Testing sections | Fewer files; the same guarantees, checked on the built output too |
 
 Results of the six assumptions:
 
