@@ -49,8 +49,8 @@ ata-mw/
     middy/    @ata-mw/middy
 ```
 
-Tooling defaults (changeable in the plan): pnpm workspaces, TypeScript, tsdown (ESM + CJS + d.ts),
-vitest, Node >= 20 (same floor as ata-validator).
+Tooling: npm workspaces, TypeScript 6, tsdown (ESM + CJS + d.ts), vitest 5, Node >= 22
+(see Amendments).
 
 ## Spec shape (shared by all adapters)
 
@@ -102,7 +102,9 @@ CompiledSpec.validateResponse(status, payload): { ok: true } | { ok: false, erro
   `500 { "error": "Internal Server Error" }`. Details go to `onResponseError(info)`; the validation
   details are never sent to the client.
 - **Not validated:** response with no matching schema, or a non-JSON response.
-- **Invalid schema in the spec:** `validate(spec)` throws at setup time.
+- **Invalid schema in the spec:** `validate(spec)` throws at setup time, with whatever error ata's
+  constructor throws, prefixed with the schema location (`request.body`, `response.200`). ata only
+  rejects authoring mistakes such as unknown keywords when `options.strictSchema: true` is set.
 - **Unexpected runtime exceptions:** left to the framework's own path (Express `next(err)`,
   Hono `onError`, Middy `onError`).
 - **Malformed JSON body:** 400 with `part: "body"` and a parse error (Hono, Middy string bodies).
@@ -136,19 +138,36 @@ Query handling: Express and Middy pass the framework's query object through. Hon
 - **Per adapter:** integration against the real framework. Express through Node `http`,
   Hono through `app.request()`, Middy by invoking the wrapped handler.
 - **Types:** vitest typecheck. Asserts `Infer<S>` reaches the handler in all three adapters.
-- **Matrix:** Express 4 and 5; Node 20, 22, 24.
+- **Matrix:** Express 4 and 5; Node 22 and 24 (see Amendments).
 - **Edge claim:** the Hono adapter test also runs under
   `node --disallow-code-generation-from-strings`.
 - Every behavior in the Error section has at least one test.
 
-## Things the plan must verify (stated as assumptions here, not facts)
+## Amendments (2026-10-05, found while writing the plan)
 
-1. Express 5 `req.query` is a prototype getter; shadowing it with an own property through
-   `Object.defineProperty` works on both Express 4 and 5.
-2. Middy early-response semantics: what a `before` return skips and whether `after` still runs.
-3. Hono `c.res.clone().json()` cost and correct handling of non-JSON and empty bodies.
-4. Typing of chained Express handlers: `RequestHandler` generics infer correctly from the
-   validate middleware into a following inline handler.
-5. tsdown is current and fits a pnpm monorepo of four packages; fall back to tsup if not.
-6. Whether ata `validate()` returns coerced data without mutating the input (`test_no_input_mutation`
-   in ata suggests yes).
+Every assumption in the original "Things the plan must verify" list was run in a scratch copy
+before the plan was written.
+
+| # | Spec said | Now | Why |
+|---|---|---|---|
+| 1 | Node >= 20, CI on Node 20, 22, 24 | `engines.node >=22`, CI on Node 22 and 24 | vitest 5 needs Node >= 22.12, tsdown 0.23 needs >= 22.18, Middy 7 needs >= 22. Node 20 reached end of life on 2026-04-30 |
+| 2 | pnpm workspaces | npm workspaces | pnpm is not installed here; npm 11 workspaces cover the need with one tool fewer |
+| 3 | Request body is parsed by the adapter | A body that is not valid JSON travels as `MalformedBody` and is reported as the `body` failure only after `params`, `query` and `headers` pass | Keeps the documented "first failing part wins" order true for malformed bodies too |
+| 4 | `validateResponse` returns `{ ok }` or `{ skipped }` | Returns `{ ok: true, skipped: boolean }` or `{ ok: false, errors }` | One discriminant (`ok`) for adapters |
+| 5 | Middy `validate` returns a middleware | Returns `MiddlewareObj<ValidatedEvent<S>>`, so `middy().use(validate(spec)).handler(event => ...)` types `event` without an annotation. A bad response is written to `request.response` in `after`, never returned | Returning from an `after` hook stops the `after` hooks of other middleware |
+| 6 | Express `ResBody` from `Infer<S>` | `res.json` is typed as the union of all declared response schemas. A handler that sends an error body for an undeclared status must declare a `default` schema or cast | Makes compile-time checking of responses real. Documented in the Express README |
+| 7 | Response validators use ata defaults | Response validators use `useDefaults: false` and the success path uses `isValidObject` | ata's `validate()` mutates its input and fills defaults; response payloads must stay untouched |
+
+Results of the six assumptions:
+
+1. Express 5 `req.query` shadowing with `Object.defineProperty` works on Express 4 and 5. Confirmed.
+2. Middy: a value returned from `before` skips the handler and all `after` hooks; a value returned
+   from `after` stops the remaining `after` hooks. Confirmed in `@middy/core` 7.9.2 source.
+3. Hono `c.res.clone().json()` works; `c.res = c.json(..., 500)` replaces the response and keeps the
+   other headers (except `content-type`). Confirmed.
+4. Chained Express handlers: `req.body`, `req.query`, `req.params` and `res.json` are typed from the
+   middleware in the next inline handler. Confirmed with type tests.
+5. tsdown 0.23 builds ESM and CJS with `.d.mts` and `.d.cts`, and externalizes dependencies. Confirmed.
+6. ata `validate()` mutates its input in place (coercion, defaults) and returns the same object;
+   `validateJSON()` does not return the parsed value, `validateAndParse()` does. Confirmed. Failed
+   validation can leave the input partly coerced, which is harmless because the request is rejected.
