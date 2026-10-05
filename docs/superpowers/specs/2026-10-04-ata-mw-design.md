@@ -159,11 +159,11 @@ before the plan was written.
 | 4 | `validateResponse` returns `{ ok }` or `{ skipped }` | Returns `{ ok: true, skipped: boolean }` or `{ ok: false, errors }` | One discriminant (`ok`) for adapters |
 | 5 | Middy `validate` returns a middleware | Returns `MiddlewareObj<ValidatedEvent<S>>`, so `middy().use(validate(spec)).handler(event => ...)` types `event` without an annotation. A bad response is written to `request.response` in `after`, never returned | Returning from an `after` hook stops the `after` hooks of other middleware |
 | 6 | Express `ResBody` from `Infer<S>` | `res.json` is typed as the union of all declared response schemas. A handler that sends an error body for an undeclared status must declare a `default` schema or cast | Makes compile-time checking of responses real. Documented in the Express README |
+| 7 | Response validators use ata defaults | Response validators use `useDefaults: false` and the success path uses `isValidObject` | ata's `validate()` mutates its input and fills defaults; response payloads must stay untouched |
+| 8 | One tsconfig, tests typed by `tsc`, dist checks in `scripts/` | see the layout and Testing sections | Fewer files; the same guarantees, checked on the built output too |
 | 9 | Middy 400 is returned from `before` | The 400 travels Middy's error path (see Adapters). Returning from `before` skips every other middleware's `onError` and `after` hook, so a CORS middleware never decorated the 400. Found in the final review | Documented: register `validate` after such middleware, because `onError` hooks run in reverse order |
 | 10 | Response validators use ata defaults | Response validators receive the spec's `options` (formats, keywords, `schemas`, `strictSchema`) with `coerceTypes`, `useDefaults` and `removeAdditional` forced off | Final review: `strictSchema` and custom formats never reached response schemas |
 | 11 | Middy body is a JSON string | A base64 body (`isBase64Encoded`) is decoded first | REST APIs with binary media types send JSON bodies base64-encoded |
-| 7 | Response validators use ata defaults | Response validators use `useDefaults: false` and the success path uses `isValidObject` | ata's `validate()` mutates its input and fills defaults; response payloads must stay untouched |
-| 8 | One tsconfig, tests typed by `tsc`, dist checks in `scripts/` | see the layout and Testing sections | Fewer files; the same guarantees, checked on the built output too |
 
 Results of the six assumptions:
 
