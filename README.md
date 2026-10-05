@@ -1,5 +1,7 @@
 # ata-mw
 
+[![ci](https://github.com/ayhansipahi/ata-mw/actions/workflows/ci.yml/badge.svg)](https://github.com/ayhansipahi/ata-mw/actions/workflows/ci.yml)
+
 Validation middleware for **Express**, **Hono** and **Middy**, built on [ata-validator](https://github.com/ata-core/ata-validator). One spec describes the request and the response. Handlers get validated, coerced data with types inferred from the JSON Schema.
 
 | Package | For |
@@ -37,7 +39,7 @@ validate({
 })
 ```
 
-A schema is a JSON Schema object, or a `Validator` from `ata-validator` that you built yourself. Schemas compile once, when the middleware is created. A schema ata rejects throws there, not on the first request, and so does a `response` key that is neither a status code (100 to 599) nor `default`. Pass `options: { strictSchema: true }` to also catch unknown keywords.
+A schema is a JSON Schema object, or a `Validator` from `ata-validator` that you built yourself. Schemas compile once, when the middleware is created. A schema ata rejects throws there, not on the first request; so does a missing one (`undefined` or `null`, usually a wrong import) and a `response` key that is neither a status code (100 to 599) nor `default`. Pass `options: { strictSchema: true }` to also catch unknown keywords.
 
 `query`, `params` and `headers` coerce types by default (`?page=2` becomes `2`). `body` does not. Set `options.coerceTypes` to change it for every part.
 

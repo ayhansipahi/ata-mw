@@ -49,5 +49,12 @@
     "validation",
     "middleware",
     "edge"
-  ]
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "homepage": "https://github.com/ayhansipahi/ata-mw/tree/main/packages/hono#readme",
+  "bugs": {
+    "url": "https://github.com/ayhansipahi/ata-mw/issues"
+  }
 }

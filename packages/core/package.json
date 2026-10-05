@@ -43,5 +43,12 @@
     "json-schema",
     "validation",
     "middleware"
-  ]
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "homepage": "https://github.com/ayhansipahi/ata-mw/tree/main/packages/core#readme",
+  "bugs": {
+    "url": "https://github.com/ayhansipahi/ata-mw/issues"
+  }
 }
