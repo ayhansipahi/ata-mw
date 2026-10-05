@@ -1,4 +1,5 @@
 export { compileSpec } from './compile'
+export { badRequestBody, internalErrorBody, parseJson } from './http'
 export { MalformedBody, REQUEST_PARTS } from './spec'
 export type {
   CompiledSpec,
