@@ -16,6 +16,8 @@ const isValidator = (x: unknown): x is Validator<any> =>
   typeof x === 'object' && x !== null && typeof (x as { validate?: unknown }).validate === 'function'
 
 function build(input: SchemaInput, options: ValidatorOptions, where: string): Validator<any> {
+  // ata accepts null (validates nothing) and undefined (throws on the first validate); a missing import must fail here.
+  if (input == null) throw new Error(`@ata-mw: missing schema at ${where} (got ${input})`)
   if (isValidator(input)) return input
   try {
     return new Validator(input, options)

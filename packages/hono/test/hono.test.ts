@@ -184,6 +184,8 @@ describe('types', () => {
       expectTypeOf(c.req.valid('json')).toEqualTypeOf<{ readonly name: string }>()
       expectTypeOf(c.req.valid('param').id).toEqualTypeOf<number>()
       expectTypeOf(c.req.valid('query').page).toEqualTypeOf<number>()
+      // @ts-expect-error headers are not declared in this spec, so reading them is a type error
+      c.req.valid('header')
       return c.json({})
     })
     expect(app).toBeDefined()

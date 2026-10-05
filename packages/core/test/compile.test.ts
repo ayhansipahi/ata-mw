@@ -85,6 +85,10 @@ describe('compileSpec request', () => {
     expect(strict.validateRequest({ query: { tag: 'a' } })).toMatchObject({ ok: false, part: 'query' })
   })
 
+  it('throws at setup for a null request schema instead of accepting everything', () => {
+    expect(() => compileSpec({ request: { body: null as never } })).toThrow(/missing schema at request\.body/)
+  })
+
   it('throws at setup, naming the schema location', () => {
     expect(() => compileSpec({ request: { body: { typo: 1 } as never }, options: { strictSchema: true } })).toThrow(/request\.body.*typo/)
   })
@@ -114,6 +118,13 @@ describe('compileSpec response', () => {
 
   it.each(['2xx', '99', '600', 'ok'])('throws for the response key %s: only 100-599 and default are allowed', (key) => {
     expect(() => compileSpec({ response: { [key]: num } as never })).toThrow(new RegExp(`response key "${key}"`))
+  })
+
+  it.each([
+    ['undefined', undefined],
+    ['null', null],
+  ])('throws at setup for a %s response schema instead of failing on the first response', (_label, schema) => {
+    expect(() => compileSpec({ response: { 200: schema as never } })).toThrow(/missing schema at response\.200/)
   })
 
   it('applies strictSchema to response schemas too, naming the location', () => {
