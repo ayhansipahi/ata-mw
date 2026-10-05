@@ -40,10 +40,12 @@ export function compileSpec(spec: RouteSpec): CompiledSpec {
     request.set(part, build(input, options, `request.${part}`))
   }
 
-  // useDefaults: false keeps response validation verdict-only: ata would otherwise fill defaults into the payload.
+  // Response schemas share the spec's options (formats, keywords, schemas, strictSchema) but never rewrite the payload:
+  // ata would otherwise coerce, fill defaults or strip fields in place.
+  const responseOptions: ValidatorOptions = { ...spec.options, coerceTypes: false, useDefaults: false, removeAdditional: false }
   const response = new Map<number | 'default', Validator<any>>()
   for (const [key, input] of Object.entries(spec.response ?? {})) {
-    response.set(key === 'default' ? 'default' : Number(key), build(input, { useDefaults: false }, `response.${key}`))
+    response.set(key === 'default' ? 'default' : Number(key), build(input, responseOptions, `response.${key}`))
   }
 
   return {

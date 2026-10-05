@@ -47,16 +47,24 @@ export type ValidatedEvent<S extends RouteSpec, E extends HttpEventLike = HttpEv
   pathParameters: PartOf<S, 'params', E['pathParameters']>
 }
 
-const JSON_HEADERS = { 'content-type': 'application/json' }
+// A fresh object per response: a warm Lambda must never share headers between invocations.
+const jsonHeaders = () => ({ 'content-type': 'application/json' })
 
 // @middy/core does not export its hook type.
 type Hook = NonNullable<MiddlewareObj<any, any>['before']>
+
+// Thrown from `before` so the invocation takes Middy's error path and the `onError` hooks of other middleware
+// (CORS, error handlers) still run. Returning from `before` would skip all of them.
+class RequestRejected extends Error {
+  constructor(readonly failure: RequestFailure) {
+    super('request validation failed')
+  }
+}
 
 /** With `middy().use(validate(spec))` the handler's `event` is typed as `ValidatedEvent<typeof spec>`. */
 export function validate<const S extends RouteSpec>(spec: S, hooks: MiddyHooks = {}): MiddlewareObj<ValidatedEvent<S>, any> {
   const compiled = compileSpec(spec)
 
-  // Returning a value from `before` ends the invocation: the handler and every `after` hook are skipped.
   const before: Hook = async (request) => {
     const { event } = request
     const parts: RequestParts = {}
@@ -65,7 +73,9 @@ export function validate<const S extends RouteSpec>(spec: S, hooks: MiddyHooks =
     if (compiled.has('headers')) parts.headers = event.headers
     if (compiled.has('body')) {
       if (typeof event.body === 'string') {
-        const parsed = parseJson(event.body)
+        // REST APIs with binary media types send JSON bodies base64-encoded.
+        const text = event.isBase64Encoded === true ? Buffer.from(event.body, 'base64').toString('utf8') : event.body
+        const parsed = parseJson(text)
         parts.body = parsed.ok ? parsed.value : new MalformedBody(parsed.errors)
       } else {
         parts.body = event.body
@@ -73,14 +83,19 @@ export function validate<const S extends RouteSpec>(spec: S, hooks: MiddyHooks =
     }
 
     const result = compiled.validateRequest(parts)
-    if (!result.ok) {
-      const failure = { part: result.part, errors: result.errors }
-      if (hooks.onError) return hooks.onError(failure, request)
-      return { statusCode: 400, headers: JSON_HEADERS, body: JSON.stringify(badRequestBody(failure)) }
-    }
+    if (!result.ok) throw new RequestRejected({ part: result.part, errors: result.errors })
     if (compiled.has('body')) event.body = result.data.body
     if (compiled.has('query')) event.queryStringParameters = result.data.query
     if (compiled.has('params')) event.pathParameters = result.data.params
+  }
+
+  // Assigns `request.response` instead of returning, so the `onError` hooks of other middleware still run.
+  const onError: Hook = async (request) => {
+    if (!(request.error instanceof RequestRejected)) return
+    const { failure } = request.error
+    request.response = hooks.onError
+      ? await hooks.onError(failure, request)
+      : { statusCode: 400, headers: jsonHeaders(), body: JSON.stringify(badRequestBody(failure)) }
   }
 
   // Assigns `request.response` instead of returning, so the `after` hooks of other middleware still run.
@@ -103,10 +118,10 @@ export function validate<const S extends RouteSpec>(spec: S, hooks: MiddyHooks =
     request.response = {
       ...res,
       statusCode: 500,
-      headers: { ...res.headers, ...JSON_HEADERS },
+      headers: { ...res.headers, ...jsonHeaders() },
       body: JSON.stringify(internalErrorBody),
     }
   }
 
-  return compiled.hasResponse ? { before, after } : { before }
+  return compiled.hasResponse ? { before, after, onError } : { before, onError }
 }

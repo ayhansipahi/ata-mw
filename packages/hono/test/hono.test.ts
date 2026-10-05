@@ -120,6 +120,25 @@ describe('response', () => {
     expect(await res.text()).toBe('{oops')
   })
 
+  it('checks the onError output against the default schema', async () => {
+    const errorBody = { type: 'object', properties: { caught: { type: 'string' } }, required: ['caught'] } as const
+    const onResponseError = vi.fn()
+    const app = new Hono()
+    app.onError((err, c) => c.json(c.req.path === '/conforming' ? { caught: err.message } : { message: err.message }, 500))
+    const mw = validate({ response: { default: errorBody } }, { onResponseError })
+    app.get('/conforming', mw, () => {
+      throw new Error('boom')
+    })
+    app.get('/broken', mw, () => {
+      throw new Error('boom')
+    })
+    expect(await (await app.request('/conforming')).json()).toEqual({ caught: 'boom' })
+    expect(onResponseError).not.toHaveBeenCalled()
+    expect(await (await app.request('/broken')).json()).toEqual({ error: 'Internal Server Error' })
+    expect(onResponseError).toHaveBeenCalledOnce()
+    expect(onResponseError.mock.calls[0]![0]).toMatchObject({ status: 500 })
+  })
+
   it('leaves handler exceptions to Hono onError', async () => {
     const app = new Hono()
     app.onError((err, c) => c.json({ caught: err.message }, 500))

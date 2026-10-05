@@ -84,4 +84,28 @@ describe('compileSpec response', () => {
     expect(payload).toEqual({})
     expect(compiled.validateResponse(200, { n: '1' })).toMatchObject({ ok: false })
   })
+
+  it('applies strictSchema to response schemas too, naming the location', () => {
+    expect(() => compileSpec({ response: { 200: { typo: 1 } as never }, options: { strictSchema: true } })).toThrow(/response\.200.*typo/)
+  })
+
+  it('applies custom formats from options to response schemas', () => {
+    const upper = compileSpec({
+      response: { 200: { type: 'string', format: 'upper' } },
+      options: { formats: { upper: (value) => value === value.toUpperCase() } },
+    })
+    expect(upper.validateResponse(200, 'ABC')).toEqual({ ok: true, skipped: false })
+    expect(upper.validateResponse(200, 'abc')).toMatchObject({ ok: false })
+  })
+
+  it('keeps responses verdict-only even when options turn on coercion, defaults or removeAdditional', () => {
+    const lenient = compileSpec({
+      response: { 200: { type: 'object', properties: { n: { type: 'integer', default: 5 } }, additionalProperties: false } },
+      options: { coerceTypes: true, useDefaults: true, removeAdditional: true },
+    })
+    expect(lenient.validateResponse(200, { n: '1' })).toMatchObject({ ok: false })
+    const payload = { extra: 1 }
+    expect(lenient.validateResponse(200, payload)).toMatchObject({ ok: false })
+    expect(payload).toEqual({ extra: 1 })
+  })
 })

@@ -28,8 +28,9 @@ export const handler = middy()
   })
 ```
 
-- `event.body` (a JSON string is parsed), `event.queryStringParameters` and `event.pathParameters` are replaced with the validated, coerced values, so `http-json-body-parser` is not needed. API Gateway sends `null` for absent parameters; that counts as `{}`. `event.headers` is validated (names lowercased) but not rewritten.
-- Only HTTP-shaped responses (`{ statusCode, body }`) are validated, and only when `body` is JSON. Base64 and non-HTTP results pass through.
+- `event.body` (a JSON string is parsed, base64 is decoded first), `event.queryStringParameters` and `event.pathParameters` are replaced with the validated, coerced values, so `http-json-body-parser` is not needed. API Gateway sends `null` for absent parameters; that counts as `{}`. `event.headers` is validated (names lowercased) but not rewritten.
+- Only HTTP-shaped responses (`{ statusCode, body }`) are validated, and only when `body` is JSON. Base64 and non-HTTP results pass through. Responses built in an `onError` hook, the 400 included, are not validated.
+- A request that fails validation takes Middy's error path, so the `onError` hooks of other middleware (for example `@middy/http-cors`) still run on the 400. Those hooks run in reverse order of registration: register `validate` after them, as in `.use(httpCors()).use(validate(spec))`.
 - A response that breaks its schema is replaced by a generic 500 in the `after` hook. Headers are kept and the `after` hooks of other middleware still run.
 - Without `.use` inference, annotate the handler with `ValidatedEvent<typeof spec, YourEventType>`.
 - Hooks: `validate(spec, { onError(failure, request) { return { statusCode: 422, body: '...' } }, onResponseError(failure, request) {} })`.

@@ -1,6 +1,6 @@
 import { createServer } from 'node:http'
 import { createRequire } from 'node:module'
-import express5, { type Express, type Response } from 'express'
+import express5, { type Express, type Request, type Response } from 'express'
 import { afterEach, describe, expect, expectTypeOf, it, vi } from 'vitest'
 import { validate } from '../src'
 
@@ -148,6 +148,28 @@ describe.each([
     app.get('/x', validate({ response: { default: { type: 'object', required: ['error'] } } }), (_req, res) => res.status(404).json({ nope: true }))
     const url = await serve(app)
     expect((await fetch(`${url}/x`)).status).toBe(500)
+  })
+
+  it('checks the error handler output against the default schema', async () => {
+    const errorBody = { type: 'object', properties: { caught: { type: 'string' } }, required: ['caught'] } as const
+    const onResponseError = vi.fn()
+    const app = express()
+    const mw = validate({ response: { default: errorBody } }, { onResponseError })
+    app.get('/conforming', mw, () => {
+      throw new Error('boom')
+    })
+    app.get('/broken', mw, () => {
+      throw new Error('boom')
+    })
+    app.use((err: Error, req: Request, res: Response, _next: unknown) => {
+      res.status(500).json(req.path === '/conforming' ? { caught: err.message } : { message: err.message })
+    })
+    const url = await serve(app)
+    expect(await (await fetch(`${url}/conforming`)).json()).toEqual({ caught: 'boom' })
+    expect(onResponseError).not.toHaveBeenCalled()
+    expect(await (await fetch(`${url}/broken`)).json()).toEqual({ error: 'Internal Server Error' })
+    expect(onResponseError).toHaveBeenCalledOnce()
+    expect(onResponseError.mock.calls[0]![0]).toMatchObject({ status: 500 })
   })
 
   it('leaves handler exceptions to the Express error path', async () => {

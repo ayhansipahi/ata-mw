@@ -75,6 +75,41 @@ describe('request', () => {
     expect(res.statusCode).toBe(422)
     expect(res.body).toBe('{"bad":"query"}')
   })
+
+  it('lets the onError hooks of other middleware decorate the 400', async () => {
+    const cors: MiddlewareObj = {
+      onError: (request) => {
+        if (request.response) request.response.headers = { ...request.response.headers, 'access-control-allow-origin': '*' }
+      },
+    }
+    const fn = middy()
+      .use(cors)
+      .use(validate({ request: { query: paging } }))
+      .handler((() => ok({})) as never)
+    const res = (await fn({} as never, {} as never)) as HttpResponse
+    expect(res.statusCode).toBe(400)
+    expect(res.headers).toEqual({ 'content-type': 'application/json', 'access-control-allow-origin': '*' })
+  })
+
+  it('gives every 400 its own headers object', async () => {
+    const fn = lambda({ request: { query: paging } }, () => ok({}))
+    const first = await call(fn, {})
+    first.headers!['x-leak'] = 'yes'
+    const second = await call(fn, {})
+    expect(second.headers).toEqual({ 'content-type': 'application/json' })
+  })
+
+  it('decodes a base64 body before parsing it', async () => {
+    const seen = vi.fn()
+    const fn = lambda({ request: { body: user } }, (event) => {
+      seen(event.body)
+      return ok({})
+    })
+    const body = Buffer.from('{"name":"ada"}').toString('base64')
+    const res = await call(fn, { body, isBase64Encoded: true })
+    expect(res.statusCode).toBe(200)
+    expect(seen).toHaveBeenCalledWith({ name: 'ada' })
+  })
 })
 
 describe('response', () => {

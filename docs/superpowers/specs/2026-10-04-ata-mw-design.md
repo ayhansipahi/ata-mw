@@ -117,7 +117,7 @@ CompiledSpec.validateResponse(status, payload): { ok: true } | { ok: false, erro
 |---|---|---|---|---|
 | **Express** | Written to `req.body`, `req.query`, `req.params` (coerced, defaults applied). `headers`: validate only, not written | `RequestHandler<P, ResBody, ReqBody, ReqQuery>` generics from `Infer<S>` | `res.json` is wrapped; status and payload are validated when it is called | `res.status(400).json(...)` |
 | **Hono** | `c.req.valid('json' \| 'query' \| 'param' \| 'header')` (Hono's own idiom) | `MiddlewareHandler<E, P, Input>`; `c.req.valid(...)` is typed | After `await next()`: `c.res.clone().json()` is validated; on failure `c.res` is replaced by a 500 | `return c.json(..., 400)` |
-| **Middy** | Written to `event.body`, `queryStringParameters`, `pathParameters`. A string body is parsed first (replaces `http-json-body-parser`) | `ValidatedEvent<typeof spec>` helper type | `after` hook: `request.response.body` is parsed and validated (HTTP-shaped responses only) | `before` returns a response (early exit) |
+| **Middy** | Written to `event.body`, `queryStringParameters`, `pathParameters`. A string body is parsed first (replaces `http-json-body-parser`) | `ValidatedEvent<typeof spec>` helper type | `after` hook: `request.response.body` is parsed and validated (HTTP-shaped responses only) | `before` throws a private `RequestRejected`; this middleware's `onError` assigns the 400 to `request.response`, so other middleware's `onError` hooks (CORS) still run |
 
 Hook signatures (`onError`, `onResponseError`): Express `(failure, req, res, next)`, Hono `(failure, c)`,
 Middy `(failure, request)`.
@@ -159,6 +159,9 @@ before the plan was written.
 | 4 | `validateResponse` returns `{ ok }` or `{ skipped }` | Returns `{ ok: true, skipped: boolean }` or `{ ok: false, errors }` | One discriminant (`ok`) for adapters |
 | 5 | Middy `validate` returns a middleware | Returns `MiddlewareObj<ValidatedEvent<S>>`, so `middy().use(validate(spec)).handler(event => ...)` types `event` without an annotation. A bad response is written to `request.response` in `after`, never returned | Returning from an `after` hook stops the `after` hooks of other middleware |
 | 6 | Express `ResBody` from `Infer<S>` | `res.json` is typed as the union of all declared response schemas. A handler that sends an error body for an undeclared status must declare a `default` schema or cast | Makes compile-time checking of responses real. Documented in the Express README |
+| 9 | Middy 400 is returned from `before` | The 400 travels Middy's error path (see Adapters). Returning from `before` skips every other middleware's `onError` and `after` hook, so a CORS middleware never decorated the 400. Found in the final review | Documented: register `validate` after such middleware, because `onError` hooks run in reverse order |
+| 10 | Response validators use ata defaults | Response validators receive the spec's `options` (formats, keywords, `schemas`, `strictSchema`) with `coerceTypes`, `useDefaults` and `removeAdditional` forced off | Final review: `strictSchema` and custom formats never reached response schemas |
+| 11 | Middy body is a JSON string | A base64 body (`isBase64Encoded`) is decoded first | REST APIs with binary media types send JSON bodies base64-encoded |
 | 7 | Response validators use ata defaults | Response validators use `useDefaults: false` and the success path uses `isValidObject` | ata's `validate()` mutates its input and fills defaults; response payloads must stay untouched |
 | 8 | One tsconfig, tests typed by `tsc`, dist checks in `scripts/` | see the layout and Testing sections | Fewer files; the same guarantees, checked on the built output too |
 

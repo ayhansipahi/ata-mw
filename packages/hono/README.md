@@ -34,6 +34,7 @@ app.post(
 - Validated data is read with `c.req.valid('json' | 'query' | 'param' | 'header')`, like `hono/validator`. The handler can still call `c.req.json()`.
 - A query key sent once is a scalar, a repeated key is an array.
 - The response is checked after the handler: a JSON response that breaks its schema is replaced by a generic 500 and the other headers are kept. Non-JSON and empty responses are not validated.
+- A `default` response schema also checks the JSON your `app.onError` handler sends: a body that does not conform becomes the generic 500. Leave `default` out, or make it match your error format.
 - Hooks: `validate(spec, { onError(failure, c) { return c.json(...) }, onResponseError(failure, c) {} })`.
 
 The spec, the error format and the limits are described in the [ata-mw README](https://github.com/ayhansipahi/ata-mw#readme).
