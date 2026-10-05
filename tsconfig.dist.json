@@ -1,0 +1,5 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "paths": {} },
+  "include": ["scripts/consumer-types.ts"]
+}
