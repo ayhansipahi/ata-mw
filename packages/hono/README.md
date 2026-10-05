@@ -3,7 +3,7 @@
 Hono middleware that validates the request and the response with [ata-validator](https://github.com/ata-core/ata-validator). ata falls back to its interpreted engine where `new Function` is refused, and this adapter's CI run uses `node --disallow-code-generation-from-strings` to prove it.
 
 ```bash
-npm install @ata-mw/hono ata-validator
+npm install @ata-mw/hono
 ```
 
 ```ts
