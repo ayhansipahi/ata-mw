@@ -144,6 +144,22 @@ describe('response', () => {
     expect((await call(lambda(spec, () => ({ statusCode: 204 })), {})).statusCode).toBe(204)
   })
 
+  it('skips a response whose content-type is not JSON, whatever its body parses as', async () => {
+    const fn = lambda({ response: { 200: user } }, () => ({ statusCode: 200, headers: { 'Content-Type': 'text/plain' }, body: '123' }))
+    const res = await call(fn, {})
+    expect(res.statusCode).toBe(200)
+    expect(res.body).toBe('123')
+  })
+
+  it('still validates a JSON content-type with parameters, whatever the header case', async () => {
+    const fn = lambda({ response: { 200: user } }, () => ({
+      statusCode: 200,
+      headers: { 'CONTENT-TYPE': 'application/json; charset=utf-8' },
+      body: '{"name":1}',
+    }))
+    expect((await call(fn, {})).statusCode).toBe(500)
+  })
+
   it('lets handler exceptions reach the Middy error path', async () => {
     const fn = lambda({ response: { 200: user } }, () => {
       throw new Error('boom')

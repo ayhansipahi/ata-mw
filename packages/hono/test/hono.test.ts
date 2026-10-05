@@ -101,6 +101,20 @@ describe('response', () => {
     expect(onResponseError.mock.calls[0]![0].errors.length).toBeGreaterThan(0)
   })
 
+  it('keeps the headers of the replaced response and of upstream middleware on the 500', async () => {
+    const app = new Hono()
+    app.use('*', async (c, next) => {
+      c.header('access-control-allow-origin', '*')
+      await next()
+    })
+    app.get('/x', validate({ response: { 200: user } }), (c) => c.json({ name: 42 }, 200, { 'x-trace': '1' }))
+    const res = await app.request('/x')
+    expect(res.status).toBe(500)
+    expect(res.headers.get('x-trace')).toBe('1')
+    expect(res.headers.get('access-control-allow-origin')).toBe('*')
+    expect(await res.json()).toEqual({ error: 'Internal Server Error' })
+  })
+
   it('skips statuses without a schema, non-JSON and empty responses', async () => {
     const app = new Hono()
     const mw = validate({ response: { 200: user } })

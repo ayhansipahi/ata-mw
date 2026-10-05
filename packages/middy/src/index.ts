@@ -102,6 +102,9 @@ export function validate<const S extends RouteSpec>(spec: S, hooks: MiddyHooks =
   const after: Hook = async (request) => {
     const res = request.response
     if (!res || typeof res.statusCode !== 'number' || res.isBase64Encoded) return
+    // A declared content type that is not JSON wins over a body that happens to parse (text/plain "123").
+    const contentType = Object.entries(res.headers ?? {}).find(([name]) => name.toLowerCase() === 'content-type')?.[1]
+    if (typeof contentType === 'string' && !contentType.includes('json')) return
     let payload: unknown
     if (typeof res.body === 'string') {
       const parsed = parseJson(res.body)
