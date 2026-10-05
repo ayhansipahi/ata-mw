@@ -37,9 +37,11 @@ validate({
 })
 ```
 
-A schema is a JSON Schema object, or a `Validator` from `ata-validator` that you built yourself. Schemas compile once, when the middleware is created. A schema ata rejects throws there, not on the first request. Pass `options: { strictSchema: true }` to also catch unknown keywords.
+A schema is a JSON Schema object, or a `Validator` from `ata-validator` that you built yourself. Schemas compile once, when the middleware is created. A schema ata rejects throws there, not on the first request, and so does a `response` key that is neither a status code (100 to 599) nor `default`. Pass `options: { strictSchema: true }` to also catch unknown keywords.
 
 `query`, `params` and `headers` coerce types by default (`?page=2` becomes `2`). `body` does not. Set `options.coerceTypes` to change it for every part.
+
+A query key sent once is a string, and coercion does not wrap it into an array, so `{ type: 'array' }` rejects `?tag=a`. Accept both with `anyOf: [{ type: 'array', items: { type: 'string' } }, { type: 'string' }]`.
 
 ## Errors
 
@@ -54,6 +56,8 @@ A request that fails validation gets a `400`:
 ```
 
 The first failing part wins, in the order `params`, `query`, `headers`, `body`. A body that is not valid JSON is reported as the `body` failure. Replace the response with the `onError` hook.
+
+`errors[].received` echoes the offending value (ata truncates long ones). If a field can hold a secret, such as a password or a token, build the 400 yourself in `onError` and leave `errors` out.
 
 A response that breaks its schema is a bug in your server, not in the client's request. The client gets `500 { "error": "Internal Server Error" }` with no details. The details go to `onResponseError`, which is for logging. A response with no matching schema (and no `default`), a non-JSON response and an empty response are not validated, and a response is never rewritten (no coercion, no defaults).
 
@@ -129,6 +133,8 @@ export const handler = middy()
 - `body` is JSON (or an already parsed object). No form or multipart bodies.
 - Middy validates HTTP-shaped responses (`{ statusCode, body }`) only.
 - Express types `res.json` as the union of the declared response schemas. Declare a `default` schema for error bodies, or cast.
+- Express checks `res.json` and `res.send(object)` only. `res.jsonp`, `res.end`, streams and string bodies are not validated, and once a response schema is declared `res.send('text')` is a type error (use `res.end('text')` or cast).
+- A `default` response schema also checks the JSON your error handler sends (Express `app.use((err, ...))`, Hono `app.onError`): a body that does not conform becomes the generic 500. Middy does not validate responses built in an `onError` hook.
 - Response validation costs a parse on Hono and Middy (the body is JSON text). Leave `response` out of the spec on routes where that matters.
 
 ## Development

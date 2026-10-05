@@ -32,7 +32,7 @@ app.post(
 ```
 
 - Validated data is read with `c.req.valid('json' | 'query' | 'param' | 'header')`, like `hono/validator`. The handler can still call `c.req.json()`.
-- A query key sent once is a scalar, a repeated key is an array.
+- A query key sent once is a scalar, a repeated key is an array, so `{ type: 'array' }` rejects `?tag=a`. Accept both with `anyOf: [{ type: 'array', items: { type: 'string' } }, { type: 'string' }]`.
 - The response is checked after the handler: a JSON response that breaks its schema is replaced by a generic 500 and the other headers are kept. Non-JSON and empty responses are not validated.
 - A `default` response schema also checks the JSON your `app.onError` handler sends: a body that does not conform becomes the generic 500. Leave `default` out, or make it match your error format.
 - Hooks: `validate(spec, { onError(failure, c) { return c.json(...) }, onResponseError(failure, c) {} })`.

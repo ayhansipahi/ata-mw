@@ -33,7 +33,9 @@ app.post(
 
 - Mount `express.json()` (or another body parser) before a route that declares `request.body`. Without one `req.body` is `undefined` and the body schema fails with a 400.
 - Validated, coerced values are written to `req.params`, `req.query` and `req.body`. `req.headers` is validated but not rewritten.
+- `express.json()` answers a malformed JSON body itself, with its own HTML 400, before this middleware runs. To return ata's error shape instead, add an error handler that checks `err.type === 'entity.parse.failed'`.
 - `res.json(...)` is typed as the union of the declared response schemas. To send an error body for a status you did not declare, add a `default` response schema or cast.
+- Only `res.json` and `res.send(object)` are checked. `res.jsonp`, `res.end`, streams and string bodies are not validated, and once a response schema is declared `res.send('text')` is a type error: use `res.end('text')` or cast.
 - A `default` response schema also checks the JSON your error handler sends: a body that does not conform becomes the generic 500. Leave `default` out, or make it match your error format.
 - Hooks: `validate(spec, { onError(failure, req, res, next) {}, onResponseError(failure, req, res) {} })`. `onError` replaces the 400. `onResponseError` is for logging; the client always gets the generic 500.
 
