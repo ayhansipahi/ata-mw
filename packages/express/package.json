@@ -1,0 +1,58 @@
+{
+  "name": "@ata-mw/express",
+  "version": "0.1.0",
+  "description": "Express middleware that validates requests and responses with ata-validator.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsdown"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "@ata-mw/core": "^0.1.0"
+  },
+  "peerDependencies": {
+    "@types/express": ">=4",
+    "ata-validator": ">=1.42.0",
+    "express": ">=4"
+  },
+  "peerDependenciesMeta": {
+    "@types/express": {
+      "optional": true
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ayhansipahi/ata-mw.git",
+    "directory": "packages/express"
+  },
+  "keywords": [
+    "express",
+    "ata-validator",
+    "json-schema",
+    "validation",
+    "middleware"
+  ]
+}
