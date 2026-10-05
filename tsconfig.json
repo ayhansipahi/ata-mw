@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "types": [
+      "node"
+    ],
+    "paths": {
+      "@ata-mw/core": [
+        "./packages/core/src/index.ts"
+      ]
+    }
+  },
+  "include": [
+    "packages/*/src",
+    "packages/*/test",
+    "vitest.config.ts"
+  ]
+}
