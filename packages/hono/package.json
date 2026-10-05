@@ -1,0 +1,53 @@
+{
+  "name": "@ata-mw/hono",
+  "version": "0.1.0",
+  "description": "Hono middleware that validates requests and responses with ata-validator. Runs where code generation is blocked.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsdown"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "@ata-mw/core": "^0.1.0"
+  },
+  "peerDependencies": {
+    "ata-validator": ">=1.42.0",
+    "hono": ">=4"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ayhansipahi/ata-mw.git",
+    "directory": "packages/hono"
+  },
+  "keywords": [
+    "hono",
+    "ata-validator",
+    "json-schema",
+    "validation",
+    "middleware",
+    "edge"
+  ]
+}
