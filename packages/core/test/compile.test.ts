@@ -58,6 +58,33 @@ describe('compileSpec request', () => {
     expect(compiled.validateRequest({ query: { n: '2' } })).toMatchObject({ ok: false })
   })
 
+  it('keeps a __proto__ header as plain data instead of re-parenting the copy', () => {
+    const compiled = compileSpec({ request: { headers: { type: 'object' } } })
+    const result = compiled.validateRequest({ headers: JSON.parse('{"__proto__":{"polluted":1}}') })
+    expect(result.ok).toBe(true)
+    const headers = (result as { data: { headers: Record<string, unknown> } }).data.headers
+    expect(headers.polluted).toBeUndefined()
+    expect(Object.getPrototypeOf(headers)).toBe(Object.prototype)
+  })
+
+  it('treats a boolean schema as declared, not as missing', () => {
+    const never = compileSpec({ request: { body: false as never } })
+    expect(never.has('body')).toBe(true)
+    expect(never.validateRequest({ body: {} })).toMatchObject({ ok: false, part: 'body' })
+    const anything = compileSpec({ request: { query: true as never } })
+    expect(anything.has('query')).toBe(true)
+    expect(anything.validateRequest({ query: { a: 1 } })).toMatchObject({ ok: true })
+  })
+
+  it('needs anyOf to accept a single query value for an array parameter', () => {
+    const tag = { type: 'object', properties: { tag: { anyOf: [{ type: 'array', items: { type: 'string' } }, { type: 'string' }] } } } as const
+    const lenient = compileSpec({ request: { query: tag } })
+    expect(lenient.validateRequest({ query: { tag: 'a' } })).toMatchObject({ ok: true })
+    expect(lenient.validateRequest({ query: { tag: ['a', 'b'] } })).toMatchObject({ ok: true })
+    const strict = compileSpec({ request: { query: { type: 'object', properties: { tag: { type: 'array' } } } } })
+    expect(strict.validateRequest({ query: { tag: 'a' } })).toMatchObject({ ok: false, part: 'query' })
+  })
+
   it('throws at setup, naming the schema location', () => {
     expect(() => compileSpec({ request: { body: { typo: 1 } as never }, options: { strictSchema: true } })).toThrow(/request\.body.*typo/)
   })
@@ -83,6 +110,10 @@ describe('compileSpec response', () => {
     withDefault.validateResponse(200, payload)
     expect(payload).toEqual({})
     expect(compiled.validateResponse(200, { n: '1' })).toMatchObject({ ok: false })
+  })
+
+  it.each(['2xx', '99', '600', 'ok'])('throws for the response key %s: only 100-599 and default are allowed', (key) => {
+    expect(() => compileSpec({ response: { [key]: num } as never })).toThrow(new RegExp(`response key "${key}"`))
   })
 
   it('applies strictSchema to response schemas too, naming the location', () => {

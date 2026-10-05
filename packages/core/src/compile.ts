@@ -24,18 +24,16 @@ function build(input: SchemaInput, options: ValidatorOptions, where: string): Va
   }
 }
 
-function lowerKeys(source: Record<string, unknown>): Record<string, unknown> {
-  const out: Record<string, unknown> = {}
-  for (const key of Object.keys(source)) out[key.toLowerCase()] = source[key]
-  return out
-}
+// fromEntries defines own properties; assigning `out['__proto__'] = ...` would re-parent the copy instead.
+const lowerKeys = (source: Record<string, unknown>): Record<string, unknown> =>
+  Object.fromEntries(Object.entries(source).map(([key, value]) => [key.toLowerCase(), value]))
 
 /** Compile every schema in the spec once. Throws if ata rejects a schema (pass `options.strictSchema` for authoring checks). */
 export function compileSpec(spec: RouteSpec): CompiledSpec {
   const request = new Map<RequestPart, Validator<any>>()
   for (const part of REQUEST_PARTS) {
     const input = spec.request?.[part]
-    if (!input) continue
+    if (input === undefined) continue // `false` and `true` are real (boolean) schemas
     const options: ValidatorOptions = { ...(COERCE_BY_DEFAULT.has(part) ? { coerceTypes: true } : {}), ...spec.options }
     request.set(part, build(input, options, `request.${part}`))
   }
@@ -45,6 +43,9 @@ export function compileSpec(spec: RouteSpec): CompiledSpec {
   const responseOptions: ValidatorOptions = { ...spec.options, coerceTypes: false, useDefaults: false, removeAdditional: false }
   const response = new Map<number | 'default', Validator<any>>()
   for (const [key, input] of Object.entries(spec.response ?? {})) {
+    if (key !== 'default' && !/^[1-5]\d\d$/.test(key)) {
+      throw new Error(`@ata-mw: invalid response key "${key}": use a status code from 100 to 599, or "default"`)
+    }
     response.set(key === 'default' ? 'default' : Number(key), build(input, responseOptions, `response.${key}`))
   }
 
