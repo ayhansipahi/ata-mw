@@ -1,6 +1,6 @@
 {
   "name": "@ata-mw/core",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Framework-agnostic request and response validation core for ata-validator middleware.",
   "license": "MIT",
   "type": "module",
