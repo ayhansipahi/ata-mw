@@ -3,7 +3,7 @@
 The engine behind [`@ata-mw/express`](https://github.com/ayhansipahi/ata-mw/tree/main/packages/express), [`@ata-mw/hono`](https://github.com/ayhansipahi/ata-mw/tree/main/packages/hono) and [`@ata-mw/middy`](https://github.com/ayhansipahi/ata-mw/tree/main/packages/middy). Use it to write an adapter for another framework.
 
 ```bash
-npm install @ata-mw/core ata-validator
+npm install @ata-mw/core
 ```
 
 ```ts

@@ -1,6 +1,6 @@
 {
   "name": "@ata-mw/core",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Framework-agnostic request and response validation core for ata-validator middleware.",
   "license": "MIT",
   "type": "module",
@@ -30,9 +30,6 @@
   "engines": {
     "node": ">=22"
   },
-  "peerDependencies": {
-    "ata-validator": ">=1.42.0"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ayhansipahi/ata-mw.git",
@@ -50,5 +47,8 @@
   "homepage": "https://github.com/ayhansipahi/ata-mw/tree/main/packages/core#readme",
   "bugs": {
     "url": "https://github.com/ayhansipahi/ata-mw/issues"
+  },
+  "dependencies": {
+    "ata-validator": "^1.42.0"
   }
 }

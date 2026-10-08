@@ -12,7 +12,7 @@
     "build": "npm run build --workspaces",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:dist": "npm run build && tsc -p tsconfig.dist.json && node --disallow-code-generation-from-strings scripts/edge-smoke.mjs"
+    "test:dist": "npm run build && node scripts/check-manifests.mjs && tsc -p tsconfig.dist.json && node --disallow-code-generation-from-strings scripts/edge-smoke.mjs"
   },
   "devDependencies": {
     "@middy/core": "^7.9.2",

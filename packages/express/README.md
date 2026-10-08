@@ -3,7 +3,7 @@
 Express middleware that validates the request and the response with [ata-validator](https://github.com/ata-core/ata-validator). Works on Express 4 and 5.
 
 ```bash
-npm install @ata-mw/express ata-validator
+npm install @ata-mw/express
 ```
 
 ```ts

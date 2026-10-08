@@ -3,7 +3,7 @@
 Middy middleware that validates API Gateway requests and responses with [ata-validator](https://github.com/ata-core/ata-validator). `@middy/core` 5 or later.
 
 ```bash
-npm install @ata-mw/middy ata-validator
+npm install @ata-mw/middy
 ```
 
 ```ts

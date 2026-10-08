@@ -14,10 +14,10 @@ Validation middleware for **Express**, **Hono** and **Middy**, built on [ata-val
 ## Install
 
 ```bash
-npm install @ata-mw/express ata-validator
+npm install @ata-mw/express
 ```
 
-Use `@ata-mw/hono` or `@ata-mw/middy` instead of `express` for those frameworks. `ata-validator >= 1.42` is a peer dependency. Node 22 or later.
+Use `@ata-mw/hono` or `@ata-mw/middy` instead of `express` for those frameworks. `ata-validator` (^1.42) comes with `@ata-mw/core`. Install it yourself only if you build `Validator` instances for the spec: a separate copy works, because validators are recognised by their `validate()` method. Node 22 or later.
 
 ## The spec
 

@@ -127,10 +127,10 @@ Query handling: Express and Middy pass the framework's query object through. Hon
 
 ## Dependencies
 
-- `@ata-mw/core`: peer `ata-validator >= 1.42`.
-- `@ata-mw/express`, `@ata-mw/hono`, `@ata-mw/middy`: dependency `@ata-mw/core`; peers
-  `ata-validator >= 1.42` (so npm keeps one copy), `express >= 4`, `hono >= 4`, `@middy/core >= 5`.
-  The Middy adapter imports types only from `@middy/core`.
+- `@ata-mw/core`: dependency `ata-validator ^1.42.0` (amended in 0.1.1, see Amendments row 12).
+- `@ata-mw/express`, `@ata-mw/hono`, `@ata-mw/middy`: dependency `@ata-mw/core` (caret range of the
+  shared version); peers `express >= 4`, `hono >= 4`, `@middy/core >= 5`. They get `ata-validator`
+  through core. The Middy adapter imports types only from `@middy/core`.
 
 ## Testing
 
@@ -164,6 +164,7 @@ before the plan was written.
 | 9 | Middy 400 is returned from `before` | The 400 travels Middy's error path (see Adapters). Returning from `before` skips every other middleware's `onError` and `after` hook, so a CORS middleware never decorated the 400. Found in the final review | Documented: register `validate` after such middleware, because `onError` hooks run in reverse order |
 | 10 | Response validators use ata defaults | Response validators receive the spec's `options` (formats, keywords, `schemas`, `strictSchema`) with `coerceTypes`, `useDefaults` and `removeAdditional` forced off | Final review: `strictSchema` and custom formats never reached response schemas |
 | 11 | Middy body is a JSON string | A base64 body (`isBase64Encoded`) is decoded first | REST APIs with binary media types send JSON bodies base64-encoded |
+| 12 | `ata-validator` is a peer dependency of every package | A regular dependency of `@ata-mw/core` only (`^1.42.0`); the adapters get it through core. All four packages share one version (0.1.1) and `scripts/check-manifests.mjs` enforces it | npm's page showed `@ata-mw/core` with no dependencies and `ata-validator` listed no dependent. 0.1.0 had the peer entry; npm versions are immutable, so the fix is 0.1.1 |
 
 Results of the six assumptions:
 

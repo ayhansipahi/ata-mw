@@ -1,6 +1,6 @@
 {
   "name": "@ata-mw/hono",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Hono middleware that validates requests and responses with ata-validator. Runs where code generation is blocked.",
   "license": "MIT",
   "type": "module",
@@ -31,10 +31,9 @@
     "node": ">=22"
   },
   "dependencies": {
-    "@ata-mw/core": "^0.1.0"
+    "@ata-mw/core": "^0.1.1"
   },
   "peerDependencies": {
-    "ata-validator": ">=1.42.0",
     "hono": ">=4"
   },
   "repository": {
