@@ -1,6 +1,6 @@
 {
   "name": "@ata-mw/express",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Express middleware that validates requests and responses with ata-validator.",
   "license": "MIT",
   "type": "module",
@@ -31,7 +31,7 @@
     "node": ">=22"
   },
   "dependencies": {
-    "@ata-mw/core": "^0.1.1"
+    "@ata-mw/core": "^0.1.2"
   },
   "peerDependencies": {
     "@types/express": ">=4",
