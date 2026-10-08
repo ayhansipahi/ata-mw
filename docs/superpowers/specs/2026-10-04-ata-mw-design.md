@@ -165,6 +165,7 @@ before the plan was written.
 | 10 | Response validators use ata defaults | Response validators receive the spec's `options` (formats, keywords, `schemas`, `strictSchema`) with `coerceTypes`, `useDefaults` and `removeAdditional` forced off | Final review: `strictSchema` and custom formats never reached response schemas |
 | 11 | Middy body is a JSON string | A base64 body (`isBase64Encoded`) is decoded first | REST APIs with binary media types send JSON bodies base64-encoded |
 | 12 | `ata-validator` is a peer dependency of every package | A regular dependency of `@ata-mw/core` only (`^1.42.0`); the adapters get it through core. All four packages share one version (0.1.1) and `scripts/check-manifests.mjs` enforces it | npm's page showed `@ata-mw/core` with no dependencies and `ata-validator` listed no dependent. 0.1.0 had the peer entry; npm versions are immutable, so the fix is 0.1.1 |
+| 13 | Non-goal: no publish pipeline in v1 | `.github/workflows/publish.yml` publishes on a `v*` tag with npm trusted publishing (OIDC, no token, automatic provenance), behind a manual approval on the `npm` GitHub environment. `scripts/set-version.mjs` sets all four versions. Steps and one-time setup in `docs/releasing.md` | The first manual publishes needed an OTP and an expired login (E401) blocked 0.1.1 |
 
 Results of the six assumptions:
 

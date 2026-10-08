@@ -148,4 +148,6 @@ npm test
 npm run test:dist   # build, check the built types, run under --disallow-code-generation-from-strings
 ```
 
+Releases are published by GitHub Actions with npm trusted publishing (no token, with provenance): see [docs/releasing.md](docs/releasing.md).
+
 MIT.

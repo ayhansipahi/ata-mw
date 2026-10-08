@@ -1,0 +1,65 @@
+name: publish
+
+# Runs when a version tag is pushed: git tag vX.Y.Z && git push origin vX.Y.Z
+# Publishes with npm trusted publishing (OIDC): there is no npm token, and npm adds provenance on its own.
+# One-time setup and the release steps are in docs/releasing.md.
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - name: The tag must match the package version and sit on main
+        run: |
+          expected="${GITHUB_REF_NAME#v}"
+          actual=$(node -p "require('./packages/core/package.json').version")
+          test "$expected" = "$actual" || { echo "::error::tag $GITHUB_REF_NAME does not match version $actual"; exit 1; }
+          git merge-base --is-ancestor "$GITHUB_SHA" origin/main || { echo "::error::$GITHUB_REF_NAME is not on main"; exit 1; }
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run test:dist
+
+  publish:
+    needs: verify
+    runs-on: ubuntu-latest
+    # The `npm` environment holds the manual approval and is part of the npm trusted publisher configuration.
+    environment: npm
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
+      - run: node -v && npm -v
+      - run: npm ci
+      - run: npm run build
+      - run: node scripts/check-manifests.mjs
+      - name: Publish core first, the adapters depend on it
+        run: |
+          npm publish -w @ata-mw/core
+          npm publish -w @ata-mw/express -w @ata-mw/hono -w @ata-mw/middy
