@@ -2,6 +2,7 @@ name: publish
 
 # Runs when a version tag is pushed: git tag vX.Y.Z && git push origin vX.Y.Z
 # Publishes with npm trusted publishing (OIDC): there is no npm token, and npm adds provenance on its own.
+# After the packages are published it creates the GitHub release for the tag, with generated notes.
 # One-time setup and the release steps are in docs/releasing.md.
 
 on:
@@ -63,3 +64,15 @@ jobs:
         run: |
           npm publish -w @ata-mw/core
           npm publish -w @ata-mw/express -w @ata-mw/hono -w @ata-mw/middy
+
+  # Only after every package is on npm. This job is the only one that can write to the repository.
+  release:
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Create the GitHub release with generated notes
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --verify-tag --title "$GITHUB_REF_NAME" --generate-notes --latest
