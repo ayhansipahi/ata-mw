@@ -23,7 +23,8 @@ publishing: no npm token, no OTP, and npm adds provenance on its own. All four p
 
 3. Open the `publish` run in the Actions tab. After `verify` passes (tag matches the version and is on `main`,
    typecheck, tests, built-package checks) the `publish` job waits for your approval: **Review deployments**,
-   tick `npm`, **Approve**. It then publishes `core` first, then `express`, `hono` and `middy`.
+   tick `npm`, **Approve**. It then publishes `core` first, then `express`, `hono` and `middy`, and finally creates
+   the GitHub release for the tag with generated notes (merged pull requests since the previous release).
 
 ## One-time setup
 
@@ -64,5 +65,7 @@ completed a successful publish within 2 days expires and has to be created again
   trust entry (`npm trust list @ata-mw/core`), or npm in the runner is older than 11.5.1 (the log prints it).
 - `tag ... does not match version`: the tag was cut from a commit where `set-version` was not applied.
   Delete the tag (`git push origin :refs/tags/vX.Y.Z`), fix, tag again.
+- Only the `release` job failed, the packages are on npm: nothing to undo. Create the release by hand with
+  `gh release create vX.Y.Z --verify-tag --generate-notes --latest`.
 - A publish that already succeeded for some packages cannot be repeated for those (npm versions are immutable).
   Bump to the next patch version and release again.
