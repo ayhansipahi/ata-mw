@@ -17,4 +17,20 @@ for (const name of ['express', 'hono', 'middy']) {
   assert.equal(pkg.peerDependencies?.['ata-validator'], undefined, `${pkg.name} gets ata-validator through core, not as a peer`)
 }
 
+// The READMEs are what npm and GitHub show: every package page must link to its own npm page, version badge and source.
+const readme = (path) => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8')
+for (const name of ['core', 'express', 'hono', 'middy']) {
+  const { name: full } = read(name)
+  const text = readme(`packages/${name}/README.md`)
+  for (const needle of [
+    `https://www.npmjs.com/package/${full}`,
+    `https://img.shields.io/npm/v/${full}`,
+    `https://github.com/ayhansipahi/ata-mw/tree/main/packages/${name}`,
+    'https://github.com/ayhansipahi/ata-mw/releases',
+  ]) {
+    assert.ok(text.includes(needle), `packages/${name}/README.md must contain ${needle}`)
+  }
+  assert.ok(readme('README.md').includes(`https://www.npmjs.com/package/${full}`), `README.md must link to the npm page of ${full}`)
+}
+
 console.log('manifests ok')

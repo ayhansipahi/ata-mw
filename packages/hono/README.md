@@ -1,5 +1,7 @@
 # @ata-mw/hono
 
+[![npm](https://img.shields.io/npm/v/@ata-mw/hono)](https://www.npmjs.com/package/@ata-mw/hono) [![downloads](https://img.shields.io/npm/dm/@ata-mw/hono)](https://www.npmjs.com/package/@ata-mw/hono) [![license](https://img.shields.io/npm/l/@ata-mw/hono)](https://github.com/ayhansipahi/ata-mw/blob/main/LICENSE) [![ci](https://github.com/ayhansipahi/ata-mw/actions/workflows/ci.yml/badge.svg)](https://github.com/ayhansipahi/ata-mw/actions/workflows/ci.yml)
+
 Hono middleware that validates the request and the response with [ata-validator](https://github.com/ata-core/ata-validator). ata falls back to its interpreted engine where `new Function` is refused, and this adapter's CI run uses `node --disallow-code-generation-from-strings` to prove it.
 
 ```bash
@@ -38,3 +40,11 @@ app.post(
 - Hooks: `validate(spec, { onError(failure, c) { return c.json(...) }, onResponseError(failure, c) {} })`.
 
 The spec, the error format and the limits are described in the [ata-mw README](https://github.com/ayhansipahi/ata-mw#readme).
+
+## Links
+
+- npm: [@ata-mw/hono](https://www.npmjs.com/package/@ata-mw/hono)
+- Source: [packages/hono](https://github.com/ayhansipahi/ata-mw/tree/main/packages/hono)
+- Releases and changelog: [GitHub releases](https://github.com/ayhansipahi/ata-mw/releases)
+- Issues: [github.com/ayhansipahi/ata-mw/issues](https://github.com/ayhansipahi/ata-mw/issues)
+- Releases are published by GitHub Actions with npm provenance, so the package page shows the commit it was built from.

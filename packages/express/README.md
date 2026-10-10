@@ -1,5 +1,7 @@
 # @ata-mw/express
 
+[![npm](https://img.shields.io/npm/v/@ata-mw/express)](https://www.npmjs.com/package/@ata-mw/express) [![downloads](https://img.shields.io/npm/dm/@ata-mw/express)](https://www.npmjs.com/package/@ata-mw/express) [![license](https://img.shields.io/npm/l/@ata-mw/express)](https://github.com/ayhansipahi/ata-mw/blob/main/LICENSE) [![ci](https://github.com/ayhansipahi/ata-mw/actions/workflows/ci.yml/badge.svg)](https://github.com/ayhansipahi/ata-mw/actions/workflows/ci.yml)
+
 Express middleware that validates the request and the response with [ata-validator](https://github.com/ata-core/ata-validator). Works on Express 4 and 5.
 
 ```bash
@@ -40,3 +42,11 @@ app.post(
 - Hooks: `validate(spec, { onError(failure, req, res, next) {}, onResponseError(failure, req, res) {} })`. `onError` replaces the 400. `onResponseError` is for logging; the client always gets the generic 500.
 
 The spec, the error format and the limits are described in the [ata-mw README](https://github.com/ayhansipahi/ata-mw#readme).
+
+## Links
+
+- npm: [@ata-mw/express](https://www.npmjs.com/package/@ata-mw/express)
+- Source: [packages/express](https://github.com/ayhansipahi/ata-mw/tree/main/packages/express)
+- Releases and changelog: [GitHub releases](https://github.com/ayhansipahi/ata-mw/releases)
+- Issues: [github.com/ayhansipahi/ata-mw/issues](https://github.com/ayhansipahi/ata-mw/issues)
+- Releases are published by GitHub Actions with npm provenance, so the package page shows the commit it was built from.

@@ -1,5 +1,7 @@
 # @ata-mw/core
 
+[![npm](https://img.shields.io/npm/v/@ata-mw/core)](https://www.npmjs.com/package/@ata-mw/core) [![downloads](https://img.shields.io/npm/dm/@ata-mw/core)](https://www.npmjs.com/package/@ata-mw/core) [![license](https://img.shields.io/npm/l/@ata-mw/core)](https://github.com/ayhansipahi/ata-mw/blob/main/LICENSE) [![ci](https://github.com/ayhansipahi/ata-mw/actions/workflows/ci.yml/badge.svg)](https://github.com/ayhansipahi/ata-mw/actions/workflows/ci.yml)
+
 The engine behind [`@ata-mw/express`](https://github.com/ayhansipahi/ata-mw/tree/main/packages/express), [`@ata-mw/hono`](https://github.com/ayhansipahi/ata-mw/tree/main/packages/hono) and [`@ata-mw/middy`](https://github.com/ayhansipahi/ata-mw/tree/main/packages/middy). Use it to write an adapter for another framework.
 
 ```bash
@@ -29,3 +31,11 @@ compiled.validateResponse(200, { items: [] }) // { ok: true, skipped: false }
 - `internalErrorBody` is the generic 500 body. Response validation never rewrites the payload.
 
 The spec shape, the defaults and the error format are described in the [ata-mw README](https://github.com/ayhansipahi/ata-mw#readme).
+
+## Links
+
+- npm: [@ata-mw/core](https://www.npmjs.com/package/@ata-mw/core)
+- Source: [packages/core](https://github.com/ayhansipahi/ata-mw/tree/main/packages/core)
+- Releases and changelog: [GitHub releases](https://github.com/ayhansipahi/ata-mw/releases)
+- Issues: [github.com/ayhansipahi/ata-mw/issues](https://github.com/ayhansipahi/ata-mw/issues)
+- Releases are published by GitHub Actions with npm provenance, so the package page shows the commit it was built from.

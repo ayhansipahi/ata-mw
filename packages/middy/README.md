@@ -1,5 +1,7 @@
 # @ata-mw/middy
 
+[![npm](https://img.shields.io/npm/v/@ata-mw/middy)](https://www.npmjs.com/package/@ata-mw/middy) [![downloads](https://img.shields.io/npm/dm/@ata-mw/middy)](https://www.npmjs.com/package/@ata-mw/middy) [![license](https://img.shields.io/npm/l/@ata-mw/middy)](https://github.com/ayhansipahi/ata-mw/blob/main/LICENSE) [![ci](https://github.com/ayhansipahi/ata-mw/actions/workflows/ci.yml/badge.svg)](https://github.com/ayhansipahi/ata-mw/actions/workflows/ci.yml)
+
 Middy middleware that validates API Gateway requests and responses with [ata-validator](https://github.com/ata-core/ata-validator). `@middy/core` 5 or later.
 
 ```bash
@@ -36,3 +38,11 @@ export const handler = middy()
 - Hooks: `validate(spec, { onError(failure, request) { return { statusCode: 422, body: '...' } }, onResponseError(failure, request) {} })`.
 
 The spec, the error format and the limits are described in the [ata-mw README](https://github.com/ayhansipahi/ata-mw#readme).
+
+## Links
+
+- npm: [@ata-mw/middy](https://www.npmjs.com/package/@ata-mw/middy)
+- Source: [packages/middy](https://github.com/ayhansipahi/ata-mw/tree/main/packages/middy)
+- Releases and changelog: [GitHub releases](https://github.com/ayhansipahi/ata-mw/releases)
+- Issues: [github.com/ayhansipahi/ata-mw/issues](https://github.com/ayhansipahi/ata-mw/issues)
+- Releases are published by GitHub Actions with npm provenance, so the package page shows the commit it was built from.
