@@ -4,12 +4,12 @@
 
 Validation middleware for **Express**, **Hono** and **Middy**, built on [ata-validator](https://github.com/ata-core/ata-validator). One spec describes the request and the response. Handlers get validated, coerced data with types inferred from the JSON Schema.
 
-| Package | For |
-|---|---|
-| [`@ata-mw/express`](packages/express) | Express 4 and 5 |
-| [`@ata-mw/hono`](packages/hono) | Hono 4, including runtimes where code generation is blocked |
-| [`@ata-mw/middy`](packages/middy) | Middy 5 and later, API Gateway events |
-| [`@ata-mw/core`](packages/core) | The shared engine. Use it to write another adapter |
+| Package | For | npm |
+|---|---|---|
+| [`@ata-mw/express`](packages/express) | Express 4 and 5 | [![npm](https://img.shields.io/npm/v/@ata-mw/express)](https://www.npmjs.com/package/@ata-mw/express) |
+| [`@ata-mw/hono`](packages/hono) | Hono 4, including runtimes where code generation is blocked | [![npm](https://img.shields.io/npm/v/@ata-mw/hono)](https://www.npmjs.com/package/@ata-mw/hono) |
+| [`@ata-mw/middy`](packages/middy) | Middy 5 and later, API Gateway events | [![npm](https://img.shields.io/npm/v/@ata-mw/middy)](https://www.npmjs.com/package/@ata-mw/middy) |
+| [`@ata-mw/core`](packages/core) | The shared engine. Use it to write another adapter | [![npm](https://img.shields.io/npm/v/@ata-mw/core)](https://www.npmjs.com/package/@ata-mw/core) |
 
 ## Install
 
