@@ -21,7 +21,7 @@
     "ata-validator": "^1.42.0",
     "express": "^5.2.1",
     "express4": "npm:express@^4.22.3",
-    "hono": "^4.13.13",
+    "hono": "^4.13.16",
     "tsdown": "^0.23.0",
     "typescript": "^6.0.3",
     "vitest": "^5.0.3"
